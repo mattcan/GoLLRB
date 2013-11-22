@@ -18,13 +18,13 @@ package llrb
 
 // Tree is a Left-Leaning Red-Black (LLRB) implementation of 2-3 trees
 type LLRB struct {
-	count int
 	root  *Node
 }
 
 type Node struct {
 	Item
 	Left, Right *Node // Pointers to left and right child nodes
+	count int
 	Black       bool  // If set, the color of the link (incoming from the parent) is black
 	// In the LLRB, new nodes are always red, hence the zero-value for node
 }
@@ -91,7 +91,7 @@ func (t *LLRB) Root() *Node {
 }
 
 // Len returns the number of nodes in the tree.
-func (t *LLRB) Len() int { return t.count }
+func (t *LLRB) Len() int { return t.root.count }
 
 // Has returns true if the tree contains an element whose order is the same as that of key.
 func (t *LLRB) Has(key Item) bool {
@@ -159,9 +159,6 @@ func (t *LLRB) ReplaceOrInsert(item Item) Item {
 	var replaced Item
 	t.root, replaced = t.replaceOrInsert(t.root, item)
 	t.root.Black = true
-	if replaced == nil {
-		t.count++
-	}
 	return replaced
 }
 
@@ -175,8 +172,14 @@ func (t *LLRB) replaceOrInsert(h *Node, item Item) (*Node, Item) {
 	var replaced Item
 	if less(item, h.Item) { // BUG
 		h.Left, replaced = t.replaceOrInsert(h.Left, item)
+		if replaced == nil {
+			h.count++
+		}
 	} else if less(h.Item, item) {
 		h.Right, replaced = t.replaceOrInsert(h.Right, item)
+		if replaced == nil {
+			h.count++
+		}
 	} else {
 		replaced, h.Item = h.Item, item
 	}
@@ -194,7 +197,6 @@ func (t *LLRB) InsertNoReplace(item Item) {
 	}
 	t.root = t.insertNoReplace(t.root, item)
 	t.root.Black = true
-	t.count++
 }
 
 func (t *LLRB) insertNoReplace(h *Node, item Item) *Node {
@@ -209,6 +211,7 @@ func (t *LLRB) insertNoReplace(h *Node, item Item) *Node {
 	} else {
 		h.Right = t.insertNoReplace(h.Right, item)
 	}
+	h.count++
 
 	return walkUpRot23(h)
 }
@@ -263,9 +266,6 @@ func (t *LLRB) DeleteMin() Item {
 	if t.root != nil {
 		t.root.Black = true
 	}
-	if deleted != nil {
-		t.count--
-	}
 	return deleted
 }
 
@@ -284,6 +284,9 @@ func deleteMin(h *Node) (*Node, Item) {
 
 	var deleted Item
 	h.Left, deleted = deleteMin(h.Left)
+	if deleted != nil {
+		h.count--
+	}
 
 	return fixUp(h), deleted
 }
@@ -295,9 +298,6 @@ func (t *LLRB) DeleteMax() Item {
 	t.root, deleted = deleteMax(t.root)
 	if t.root != nil {
 		t.root.Black = true
-	}
-	if deleted != nil {
-		t.count--
 	}
 	return deleted
 }
@@ -317,6 +317,9 @@ func deleteMax(h *Node) (*Node, Item) {
 	}
 	var deleted Item
 	h.Right, deleted = deleteMax(h.Right)
+	if deleted != nil {
+		h.count--
+	}
 
 	return fixUp(h), deleted
 }
@@ -328,9 +331,6 @@ func (t *LLRB) Delete(key Item) Item {
 	t.root, deleted = t.delete(t.root, key)
 	if t.root != nil {
 		t.root.Black = true
-	}
-	if deleted != nil {
-		t.count--
 	}
 	return deleted
 }
@@ -372,13 +372,16 @@ func (t *LLRB) delete(h *Node, item Item) (*Node, Item) {
 			h.Right, deleted = t.delete(h.Right, item)
 		}
 	}
+	if deleted != nil {
+		h.count--
+	}
 
 	return fixUp(h), deleted
 }
 
 // Internal node manipulation routines
 
-func newNode(item Item) *Node { return &Node{Item: item} }
+func newNode(item Item) *Node { return &Node{Item: item, count: 1} }
 
 func isRed(h *Node) bool {
 	if h == nil {
@@ -392,6 +395,12 @@ func rotateLeft(h *Node) *Node {
 	if x.Black {
 		panic("rotating a black link")
 	}
+
+	x.count, h.count = h.count, h.count - x.count
+	if x.Left != nil {
+		h.count += x.Left.count
+	}
+
 	h.Right = x.Left
 	x.Left = h
 	x.Black = h.Black
@@ -404,6 +413,12 @@ func rotateRight(h *Node) *Node {
 	if x.Black {
 		panic("rotating a black link")
 	}
+
+	x.count, h.count = h.count, h.count - x.count
+	if x.Right != nil {
+		h.count += x.Right.count
+	}
+
 	h.Left = x.Right
 	x.Right = h
 	x.Black = h.Black
