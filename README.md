@@ -9,6 +9,13 @@ This fork adds three functions:
 	IndexOfLessOrEqual(Item) int
 	IndexOf(Item) (int, bool)
 
+## Rationale
+
+You can use these functions to determine how many items you will be iterating
+over, before you perform the actual iteration. Perhaps you need to send a
+header with the number of items. Or maybe you want to allocate a slice of the
+correct size before iterating.
+
 ## Overhead
 
 To provide these functions requires one int per node, so memory consumption grows
