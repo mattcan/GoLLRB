@@ -4,9 +4,10 @@ GoLLRB is a Left-Leaning Red-Black (LLRB) implementation of 2-3 balanced binary
 search trees in Go Language.
 
 This fork adds three functions:
-   IndexOfGreaterOrEqual(Item) int
-   IndexOfLessOrEqual(Item) int
-   IndexOf(Item) (int, bool)
+
+	IndexOfGreaterOrEqual(Item) int
+	IndexOfLessOrEqual(Item) int
+	IndexOf(Item) (int, bool)
 
 ## Overhead
 
@@ -22,6 +23,7 @@ delete are still O(log n), as are the new IndexOf... functions.
 ## Example
 
 This code:
+
         package main
 
         import (
@@ -52,6 +54,7 @@ This code:
         }
 
 prints this output:
+
         3 items in tree
         0 is at 0
         1 is between 0 and 1
@@ -63,4 +66,4 @@ prints this output:
 
 GoLLRB was written by [Petar Maymounkov](http://pdos.csail.mit.edu/~petar/). 
 
-These indexing additions were added by William MacKay.
+The indexing additions were added by William MacKay.
