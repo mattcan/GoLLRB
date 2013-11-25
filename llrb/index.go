@@ -51,7 +51,7 @@ func (t *LLRB) IndexOfLessOrEqual(item Item) int {
 			return i
 		}
 	}
-	return i-1
+	return i - 1
 }
 
 // IndexOfLessOrEqual returns the index of item as if the tree were a

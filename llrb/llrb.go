@@ -18,14 +18,14 @@ package llrb
 
 // Tree is a Left-Leaning Red-Black (LLRB) implementation of 2-3 trees
 type LLRB struct {
-	root  *Node
+	root *Node
 }
 
 type Node struct {
 	Item
 	Left, Right *Node // Pointers to left and right child nodes
-	count int
-	Black       bool  // If set, the color of the link (incoming from the parent) is black
+	count       int
+	Black       bool // If set, the color of the link (incoming from the parent) is black
 	// In the LLRB, new nodes are always red, hence the zero-value for node
 }
 
@@ -91,7 +91,13 @@ func (t *LLRB) Root() *Node {
 }
 
 // Len returns the number of nodes in the tree.
-func (t *LLRB) Len() int { return t.root.count }
+func (t *LLRB) Len() int {
+	if t.root != nil {
+		return t.root.count
+	}
+
+	return 0
+}
 
 // Has returns true if the tree contains an element whose order is the same as that of key.
 func (t *LLRB) Has(key Item) bool {
@@ -396,7 +402,7 @@ func rotateLeft(h *Node) *Node {
 		panic("rotating a black link")
 	}
 
-	x.count, h.count = h.count, h.count - x.count
+	x.count, h.count = h.count, h.count-x.count
 	if x.Left != nil {
 		h.count += x.Left.count
 	}
@@ -414,7 +420,7 @@ func rotateRight(h *Node) *Node {
 		panic("rotating a black link")
 	}
 
-	x.count, h.count = h.count, h.count - x.count
+	x.count, h.count = h.count, h.count-x.count
 	if x.Right != nil {
 		h.count += x.Right.count
 	}
