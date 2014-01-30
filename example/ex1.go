@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/petar/GoLLRB/llrb"
+	"github.com/foobaz/GoLLRB/llrb"
 )
 
 func Print(item llrb.Item) bool {
