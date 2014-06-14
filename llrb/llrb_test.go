@@ -12,8 +12,8 @@ import (
 
 func TestCases(t *testing.T) {
 	tree := New()
-	tree.ReplaceOrInsert(Int(1))
-	tree.ReplaceOrInsert(Int(1))
+	tree.ReplaceOrInsert(Int(1), int(1))
+	tree.ReplaceOrInsert(Int(1), int(2))
 	if tree.Len() != 1 {
 		t.Errorf("expecting len 1")
 	}
@@ -42,13 +42,13 @@ func TestReverseInsertOrder(t *testing.T) {
 	tree := New()
 	n := 100
 	for i := 0; i < n; i++ {
-		tree.ReplaceOrInsert(Int(n - i))
+		tree.ReplaceOrInsert(Int(n-i), int(n+1))
 	}
 	i := 0
-	tree.AscendGreaterOrEqual(Int(0), func(item Item) bool {
+	tree.AscendGreaterOrEqual(Int(0), func(k Key) bool {
 		i++
-		if item.(Int) != Int(i) {
-			t.Errorf("bad order: got %d, expect %d", item.(Int), i)
+		if k.(Int) != Int(i) {
+			t.Errorf("bad order: got %d, expect %d", k.(Int), i)
 		}
 		return true
 	})
@@ -59,16 +59,16 @@ func TestRange(t *testing.T) {
 	order := []String{
 		"ab", "aba", "abc", "a", "aa", "aaa", "b", "a-", "a!",
 	}
-	for _, i := range order {
-		tree.ReplaceOrInsert(i)
+	for index, i := range order {
+		tree.ReplaceOrInsert(i, index)
 	}
 	k := 0
-	tree.AscendRange(String("ab"), String("ac"), func(item Item) bool {
+	tree.AscendRange(String("ab"), String("ac"), func(key Key) bool {
 		if k > 3 {
 			t.Fatalf("returned more items than expected")
 		}
 		i1 := order[k]
-		i2 := item.(String)
+		i2 := key.(String)
 		if i1 != i2 {
 			t.Errorf("expecting %s, got %s", i1, i2)
 		}
@@ -82,11 +82,11 @@ func TestRandomInsertOrder(t *testing.T) {
 	n := 1000
 	perm := rand.Perm(n)
 	for i := 0; i < n; i++ {
-		tree.ReplaceOrInsert(Int(perm[i]))
+		tree.ReplaceOrInsert(Int(perm[i]), i)
 	}
 	j := 0
-	tree.AscendGreaterOrEqual(Int(0), func(item Item) bool {
-		if item.(Int) != Int(j) {
+	tree.AscendGreaterOrEqual(Int(0), func(key Key) bool {
+		if key.(Int) != Int(j) {
 			t.Fatalf("bad order")
 		}
 		j++
@@ -99,11 +99,11 @@ func TestRandomReplace(t *testing.T) {
 	n := 100
 	perm := rand.Perm(n)
 	for i := 0; i < n; i++ {
-		tree.ReplaceOrInsert(Int(perm[i]))
+		tree.ReplaceOrInsert(Int(perm[i]), i)
 	}
 	perm = rand.Perm(n)
 	for i := 0; i < n; i++ {
-		if replaced := tree.ReplaceOrInsert(Int(perm[i])); replaced == nil || replaced.(Int) != Int(perm[i]) {
+		if replaced := tree.ReplaceOrInsert(Int(perm[i]), i); replaced == nil || replaced.(Int) != Int(perm[i]) {
 			t.Errorf("error replacing")
 		}
 	}
@@ -114,7 +114,7 @@ func TestRandomInsertSequentialDelete(t *testing.T) {
 	n := 1000
 	perm := rand.Perm(n)
 	for i := 0; i < n; i++ {
-		tree.ReplaceOrInsert(Int(perm[i]))
+		tree.ReplaceOrInsert(Int(perm[i]), i)
 	}
 	for i := 0; i < n; i++ {
 		tree.Delete(Int(i))
@@ -126,7 +126,7 @@ func TestRandomInsertDeleteNonExistent(t *testing.T) {
 	n := 100
 	perm := rand.Perm(n)
 	for i := 0; i < n; i++ {
-		tree.ReplaceOrInsert(Int(perm[i]))
+		tree.ReplaceOrInsert(Int(perm[i]), i)
 	}
 	if tree.Delete(Int(200)) != nil {
 		t.Errorf("deleted non-existent item")
@@ -152,20 +152,20 @@ func TestRandomInsertPartialDeleteOrder(t *testing.T) {
 	n := 100
 	perm := rand.Perm(n)
 	for i := 0; i < n; i++ {
-		tree.ReplaceOrInsert(Int(perm[i]))
+		tree.ReplaceOrInsert(Int(perm[i]), i)
 	}
 	for i := 1; i < n-1; i++ {
 		tree.Delete(Int(i))
 	}
 	j := 0
-	tree.AscendGreaterOrEqual(Int(0), func(item Item) bool {
+	tree.AscendGreaterOrEqual(Int(0), func(key Key) bool {
 		switch j {
 		case 0:
-			if item.(Int) != Int(0) {
+			if key.(Int) != Int(0) {
 				t.Errorf("expecting 0")
 			}
 		case 1:
-			if item.(Int) != Int(n-1) {
+			if key.(Int) != Int(n-1) {
 				t.Errorf("expecting %d", n-1)
 			}
 		}
@@ -179,7 +179,7 @@ func TestRandomInsertStats(t *testing.T) {
 	n := 100000
 	perm := rand.Perm(n)
 	for i := 0; i < n; i++ {
-		tree.ReplaceOrInsert(Int(perm[i]))
+		tree.ReplaceOrInsert(Int(perm[i]), i)
 	}
 	avg, _ := tree.HeightStats()
 	expAvg := math.Log2(float64(n)) - 1.5
@@ -191,7 +191,7 @@ func TestRandomInsertStats(t *testing.T) {
 func BenchmarkInsert(b *testing.B) {
 	tree := New()
 	for i := 0; i < b.N; i++ {
-		tree.ReplaceOrInsert(Int(b.N - i))
+		tree.ReplaceOrInsert(Int(b.N-i), i)
 	}
 }
 
@@ -199,7 +199,7 @@ func BenchmarkDelete(b *testing.B) {
 	b.StopTimer()
 	tree := New()
 	for i := 0; i < b.N; i++ {
-		tree.ReplaceOrInsert(Int(b.N - i))
+		tree.ReplaceOrInsert(Int(b.N-i), i)
 	}
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
@@ -211,7 +211,7 @@ func BenchmarkDeleteMin(b *testing.B) {
 	b.StopTimer()
 	tree := New()
 	for i := 0; i < b.N; i++ {
-		tree.ReplaceOrInsert(Int(b.N - i))
+		tree.ReplaceOrInsert(Int(b.N-i), i)
 	}
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
@@ -225,12 +225,12 @@ func TestInsertNoReplace(t *testing.T) {
 	for q := 0; q < 2; q++ {
 		perm := rand.Perm(n)
 		for i := 0; i < n; i++ {
-			tree.InsertNoReplace(Int(perm[i]))
+			tree.InsertNoReplace(Int(perm[i]), i)
 		}
 	}
 	j := 0
-	tree.AscendGreaterOrEqual(Int(0), func(item Item) bool {
-		if item.(Int) != Int(j/2) {
+	tree.AscendGreaterOrEqual(Int(0), func(key Key) bool {
+		if key.(Int) != Int(j/2) {
 			t.Fatalf("bad order")
 		}
 		j++

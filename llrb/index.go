@@ -4,14 +4,14 @@ package llrb
 // sorted array. If the same item does not exist in the tree, it returns
 // the index of the closest item greater than item. If the tree does not
 // contain any item greater than or equal to item, it returns t.Len().
-func (t *LLRB) IndexOfGreaterOrEqual(item Item) int {
+func (t *LLRB) IndexOfGreaterOrEqual(item Key) int {
 	var i int
 	h := t.root
 	for h != nil {
 		switch {
-		case less(item, h.Item):
+		case less(item, h.Key):
 			h = h.Left
-		case less(h.Item, item):
+		case less(h.Key, item):
 			if h.Left != nil {
 				i += h.Left.count
 			}
@@ -31,14 +31,14 @@ func (t *LLRB) IndexOfGreaterOrEqual(item Item) int {
 // sorted array. If the same item does not exist in the tree, it returns
 // the index of the closest item less than item. If the tree does not
 // contain any item less than or equal to item, it returns -1.
-func (t *LLRB) IndexOfLessOrEqual(item Item) int {
+func (t *LLRB) IndexOfLessOrEqual(item Key) int {
 	var i int
 	h := t.root
 	for h != nil {
 		switch {
-		case less(item, h.Item):
+		case less(item, h.Key):
 			h = h.Left
-		case less(h.Item, item):
+		case less(h.Key, item):
 			if h.Left != nil {
 				i += h.Left.count
 			}
@@ -57,14 +57,14 @@ func (t *LLRB) IndexOfLessOrEqual(item Item) int {
 // IndexOfLessOrEqual returns the index of item as if the tree were a
 // sorted array. The second return variable indicates success. It is
 // false if the requested item does not exist in the tree.
-func (t *LLRB) IndexOf(item Item) (int, bool) {
+func (t *LLRB) IndexOf(item Key) (int, bool) {
 	var i int
 	h := t.root
 	for h != nil {
 		switch {
-		case less(item, h.Item):
+		case less(item, h.Key):
 			h = h.Left
-		case less(h.Item, item):
+		case less(h.Key, item):
 			if h.Left != nil {
 				i += h.Left.count
 			}

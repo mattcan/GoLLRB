@@ -1,71 +1,72 @@
 package llrb
 
-type ItemIterator func(i Item) bool
+type KeyIterator func(k Key) bool
 
 //func (t *Tree) Ascend(iterator ItemIterator) {
 //	t.AscendGreaterOrEqual(Inf(-1), iterator)
 //}
 
-func (t *LLRB) AscendRange(greaterOrEqual, lessThan Item, iterator ItemIterator) {
+func (t *LLRB) AscendRange(greaterOrEqual, lessThan Key, iterator KeyIterator) {
 	t.ascendRange(t.root, greaterOrEqual, lessThan, iterator)
 }
 
-func (t *LLRB) ascendRange(h *Node, inf, sup Item, iterator ItemIterator) bool {
+func (t *LLRB) ascendRange(h *Node, inf, sup Key, iterator KeyIterator) bool {
 	if h == nil {
 		return true
 	}
-	if !less(h.Item, sup) {
+	if !less(h.Key, sup) {
 		return t.ascendRange(h.Left, inf, sup, iterator)
 	}
-	if less(h.Item, inf) {
+	if less(h.Key, inf) {
 		return t.ascendRange(h.Right, inf, sup, iterator)
 	}
 
 	if !t.ascendRange(h.Left, inf, sup, iterator) {
 		return false
 	}
-	if !iterator(h.Item) {
+	if !iterator(h.Key) {
 		return false
 	}
+
 	return t.ascendRange(h.Right, inf, sup, iterator)
 }
 
 // AscendGreaterOrEqual will call iterator once for each element greater or equal to
 // pivot in ascending order. It will stop whenever the iterator returns false.
-func (t *LLRB) AscendGreaterOrEqual(pivot Item, iterator ItemIterator) {
+func (t *LLRB) AscendGreaterOrEqual(pivot Key, iterator KeyIterator) {
 	t.ascendGreaterOrEqual(t.root, pivot, iterator)
 }
 
-func (t *LLRB) ascendGreaterOrEqual(h *Node, pivot Item, iterator ItemIterator) bool {
+func (t *LLRB) ascendGreaterOrEqual(h *Node, pivot Key, iterator KeyIterator) bool {
 	if h == nil {
 		return true
 	}
-	if !less(h.Item, pivot) {
+	if !less(h.Key, pivot) {
 		if !t.ascendGreaterOrEqual(h.Left, pivot, iterator) {
 			return false
 		}
-		if !iterator(h.Item) {
+		if !iterator(h.Key) {
 			return false
 		}
 	}
 	return t.ascendGreaterOrEqual(h.Right, pivot, iterator)
 }
 
-func (t *LLRB) AscendLessThan(pivot Item, iterator ItemIterator) {
+func (t *LLRB) AscendLessThan(pivot Key, iterator KeyIterator) {
 	t.ascendLessThan(t.root, pivot, iterator)
 }
 
-func (t *LLRB) ascendLessThan(h *Node, pivot Item, iterator ItemIterator) bool {
+func (t *LLRB) ascendLessThan(h *Node, pivot Key, iterator KeyIterator) bool {
 	if h == nil {
 		return true
 	}
 	if !t.ascendLessThan(h.Left, pivot, iterator) {
 		return false
 	}
-	if !iterator(h.Item) {
+	if !iterator(h.Key) {
 		return false
 	}
-	if less(h.Item, pivot) {
+	if less(h.Key, pivot) {
 		return t.ascendLessThan(h.Left, pivot, iterator)
 	}
 	return true
@@ -73,19 +74,19 @@ func (t *LLRB) ascendLessThan(h *Node, pivot Item, iterator ItemIterator) bool {
 
 // DescendLessOrEqual will call iterator once for each element less than the
 // pivot in descending order. It will stop whenever the iterator returns false.
-func (t *LLRB) DescendLessOrEqual(pivot Item, iterator ItemIterator) {
+func (t *LLRB) DescendLessOrEqual(pivot Key, iterator KeyIterator) {
 	t.descendLessOrEqual(t.root, pivot, iterator)
 }
 
-func (t *LLRB) descendLessOrEqual(h *Node, pivot Item, iterator ItemIterator) bool {
+func (t *LLRB) descendLessOrEqual(h *Node, pivot Key, iterator KeyIterator) bool {
 	if h == nil {
 		return true
 	}
-	if less(h.Item, pivot) || !less(pivot, h.Item) {
+	if less(h.Key, pivot) || !less(pivot, h.Key) {
 		if !t.descendLessOrEqual(h.Right, pivot, iterator) {
 			return false
 		}
-		if !iterator(h.Item) {
+		if !iterator(h.Key) {
 			return false
 		}
 	}

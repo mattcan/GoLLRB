@@ -6,12 +6,12 @@ package llrb
 
 type Int int
 
-func (x Int) Less(than Item) bool {
+func (x Int) Less(than Key) bool {
 	return x < than.(Int)
 }
 
 type String string
 
-func (x String) Less(than Item) bool {
+func (x String) Less(than Key) bool {
 	return x < than.(String)
 }
