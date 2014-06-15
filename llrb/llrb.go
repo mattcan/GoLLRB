@@ -34,7 +34,9 @@ type Key interface {
 	Less(than Key) bool
 }
 
-type Value interface{}
+type Value interface {
+	Update(value Value)
+}
 
 //
 func less(x, y Key) bool {
@@ -148,6 +150,38 @@ func (t *LLRB) Max() (Key, Value) {
 	return h.Key, h.Value
 }
 
+func (t *LLRB) UpdateOrInsert(k Key, v Value) {
+	if k == nil {
+		panic("Cannot update or insert nil key")
+	}
+
+	t.root = t.updateOrInsert(t.root, k, v)
+	t.root.Black = true
+}
+
+func (t *LLRB) updateOrInsert(h *Node, k Key, v Value) *Node {
+	if h == nil {
+		return newNode(k, v)
+	}
+
+	h = walkDownRot23(h)
+
+	if less(k, h.Key) {
+		h.Left = t.updateOrInsert(h.Left, k, v)
+	} else if less(h.Key, k) {
+		h.Right = t.updateOrInsert(h.Right, k, v)
+	} else {
+		h.Value.Update(v)
+	}
+
+	h.count++
+
+	h = walkUpRot23(h)
+
+	return h
+}
+
+
 // ReplaceOrInsert inserts item into the tree. If an existing
 // element has the same order, it is removed from the tree and returned.
 func (t *LLRB) ReplaceOrInsert(k Key, v Value) Key {
@@ -162,7 +196,7 @@ func (t *LLRB) ReplaceOrInsert(k Key, v Value) Key {
 
 func (t *LLRB) replaceOrInsert(h *Node, k Key, v Value) (*Node, Key) {
 	if h == nil {
-		return newNode(k, v), nil
+		return newNode(k, v), k
 	}
 
 	h = walkDownRot23(h)
@@ -179,7 +213,7 @@ func (t *LLRB) replaceOrInsert(h *Node, k Key, v Value) (*Node, Key) {
 			h.count++
 		}
 	} else {
-		replaced, h.Key = h.Key, k
+		replaced, h.Key, h.Value = h.Key, k, v
 	}
 
 	h = walkUpRot23(h)
